@@ -74,7 +74,7 @@ public class CodeDialogBuilder {
     public void addSourcePathSection(java.util.List<String> string, String defaultValue) {
         topPanel.add(new JLabel(StringResources.SOURCE_PATH_LABEL));
         sourcePathComboBox = new ComboBox(new CollectionComboBoxModel(string));
-        sourcePathComboBox.setSelectedItem(defaultValue);
+//        sourcePathComboBox.setSelectedIndex(0);
         topPanel.add(sourcePathComboBox);
     }
 

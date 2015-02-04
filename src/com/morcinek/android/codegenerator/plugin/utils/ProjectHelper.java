@@ -4,10 +4,15 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.velocity.util.StringUtils;
+import org.jetbrains.jps.model.JpsElement;
+import org.jetbrains.jps.model.java.JavaSourceRootType;
+import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +21,11 @@ import java.util.List;
  * Copyright 2014 Tomasz Morcinek. All rights reserved.
  */
 public class ProjectHelper {
+    private Module module;
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
 
     public boolean fileExists(Project project, String fileName, String folderPath) throws IOException {
         try {
@@ -57,9 +67,9 @@ public class ProjectHelper {
     public List<String> getSourceRootPathList(Project project, AnActionEvent event) {
         List<String> sourceRoots = Lists.newArrayList();
         String projectPath = StringUtils.normalizePath(project.getBasePath());
-        for (VirtualFile virtualFile : getModuleRootManager(event).getSourceRoots(false)) {
-            sourceRoots.add(StringUtils.normalizePath(virtualFile.getPath()).replace(projectPath, ""));
-        }
+        List<VirtualFile> source = SourceRootUtils.getSourceRoots(module);
+        for (VirtualFile file : source)
+            sourceRoots.add(StringUtils.normalizePath(file.getPath()).replace(projectPath, ""));
         return sourceRoots;
     }
 

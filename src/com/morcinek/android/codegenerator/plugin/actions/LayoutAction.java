@@ -3,9 +3,12 @@ package com.morcinek.android.codegenerator.plugin.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.morcinek.android.codegenerator.codegeneration.providers.ResourceProvidersFactory;
 import com.morcinek.android.codegenerator.plugin.actions.visibility.ActionVisibilityHelper;
 import com.morcinek.android.codegenerator.plugin.codegenerator.CodeGeneratorController;
@@ -14,10 +17,7 @@ import com.morcinek.android.codegenerator.plugin.persistence.Settings;
 import com.morcinek.android.codegenerator.plugin.ui.CodeDialogBuilder;
 import com.morcinek.android.codegenerator.plugin.ui.DialogsFactory;
 import com.morcinek.android.codegenerator.plugin.ui.StringResources;
-import com.morcinek.android.codegenerator.plugin.utils.ClipboardHelper;
-import com.morcinek.android.codegenerator.plugin.utils.PackageHelper;
-import com.morcinek.android.codegenerator.plugin.utils.PathHelper;
-import com.morcinek.android.codegenerator.plugin.utils.ProjectHelper;
+import com.morcinek.android.codegenerator.plugin.utils.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,7 +31,7 @@ public abstract class LayoutAction extends AnAction {
 
     private final ErrorHandler errorHandler = new ErrorHandler();
 
-    private final PackageHelper packageHelper = new PackageHelper();
+    protected final PackageHelper packageHelper = new PackageHelper();
 
     private final ProjectHelper projectHelper = new ProjectHelper();
 
@@ -41,6 +41,9 @@ public abstract class LayoutAction extends AnAction {
     public void actionPerformed(AnActionEvent event) {
         Project project = getEventProject(event);
         VirtualFile selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+        Module module = ModuleUtil.findModuleForFile(selectedFile, project);
+        projectHelper.setModule(module);
+        packageHelper.setModule(module);
         Settings settings = Settings.getInstance(project);
         try {
             showCodeDialog(event, project, selectedFile, settings);
@@ -55,7 +58,7 @@ public abstract class LayoutAction extends AnAction {
         final CodeDialogBuilder codeDialogBuilder = new CodeDialogBuilder(project,
                 String.format(StringResources.TITLE_FORMAT_TEXT, selectedFile.getName()), generatedCode);
         codeDialogBuilder.addSourcePathSection(projectHelper.getSourceRootPathList(project, event), settings.getSourcePath());
-        codeDialogBuilder.addPackageSection(packageHelper.getPackageName(project, event));
+        codeDialogBuilder.addPackageSection(packageHelper.getPackageName());
         codeDialogBuilder.addAction(StringResources.COPY_ACTION_LABEL, new Runnable() {
             @Override
             public void run() {
@@ -94,7 +97,7 @@ public abstract class LayoutAction extends AnAction {
         }
     }
 
-    private void createOrOverrideFileWithGeneratedCode(CodeDialogBuilder codeDialogBuilder, Project project, String folderPath, String fileName) throws IOException {
+    protected void createOrOverrideFileWithGeneratedCode(CodeDialogBuilder codeDialogBuilder, Project project, String folderPath, String fileName) throws IOException {
         String finalCode = getFinalCode(codeDialogBuilder);
         VirtualFile createdFile = projectHelper.createOrFindFile(project, fileName, folderPath);
         projectHelper.setFileContent(project, createdFile, finalCode);
