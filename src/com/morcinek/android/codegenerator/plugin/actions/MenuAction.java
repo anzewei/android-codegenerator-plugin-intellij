@@ -31,13 +31,6 @@ public class MenuAction extends AnAction {
             String generatedCode = codeGeneratorController.generateCode(project, selectedFile, event.getData(PlatformDataKeys.EDITOR));
             final CodeDialogBuilder codeDialogBuilder = new CodeDialogBuilder(project,
                     String.format(StringResources.TITLE_FORMAT_TEXT, selectedFile.getName()), generatedCode);
-            codeDialogBuilder.addAction(StringResources.COPY_ACTION_LABEL, new Runnable() {
-                @Override
-                public void run() {
-                    ClipboardHelper.copy(codeDialogBuilder.getModifiedCode());
-                    codeDialogBuilder.closeDialog();
-                }
-            });
             codeDialogBuilder.showDialog();
         } catch (Exception exception) {
             errorHandler.handleError(project, exception);

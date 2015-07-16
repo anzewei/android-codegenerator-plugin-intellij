@@ -1,13 +1,20 @@
 package com.morcinek.android.codegenerator.plugin.ui;
 
 import com.google.common.collect.Maps;
+import com.intellij.lang.Language;
+import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.ex.FileEditorProviderManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextField;
 
 import javax.swing.*;
@@ -25,17 +32,23 @@ public class CodeDialogBuilder {
 
     private final JPanel topPanel;
 
-    private final JTextArea codeArea;
+//    private final JTextArea codeArea;
     private JBTextField packageText;
     private JComboBox sourcePathComboBox;
+    private PsiFile mFile;
 
     public CodeDialogBuilder(Project project, String title, String producedCode) {
         dialogBuilder = new DialogBuilder(project);
         dialogBuilder.setTitle(title);
 
         JPanel centerPanel = new JPanel(new BorderLayout());
-        codeArea = prepareCodeArea(producedCode);
-        centerPanel.add(codeArea, BorderLayout.CENTER);
+//        codeArea = prepareCodeArea(producedCode);
+        Language language = JavaLanguage.INSTANCE;
+        mFile = PsiFileFactory.getInstance(project).createFileFromText("d.java", language, producedCode);
+        FileEditor editor = FileEditorProviderManager.getInstance().getProviders(project, mFile.getVirtualFile())[0].createEditor(project, mFile.getVirtualFile());
+
+//        JScrollPane scrollPane = new JBScrollPane(codeArea);
+        centerPanel.add(editor.getComponent(), BorderLayout.CENTER);
         dialogBuilder.setCenterPanel(centerPanel);
 
         topPanel = new JPanel(new GridLayout(0, 2));
@@ -91,7 +104,7 @@ public class CodeDialogBuilder {
     }
 
     public String getModifiedCode() {
-        return codeArea.getText();
+        return mFile.getText();
     }
 
     private JTextArea prepareCodeArea(String producedCode) {

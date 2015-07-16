@@ -43,6 +43,7 @@ public abstract class LayoutAction extends AnAction {
         VirtualFile selectedFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
         Module module = ModuleUtil.findModuleForFile(selectedFile, project);
         projectHelper.setModule(module);
+
         packageHelper.setModule(module);
         Settings settings = Settings.getInstance(project);
         try {
@@ -59,13 +60,7 @@ public abstract class LayoutAction extends AnAction {
                 String.format(StringResources.TITLE_FORMAT_TEXT, selectedFile.getName()), generatedCode);
         codeDialogBuilder.addSourcePathSection(projectHelper.getSourceRootPathList(project, event), settings.getSourcePath());
         codeDialogBuilder.addPackageSection(packageHelper.getPackageName());
-        codeDialogBuilder.addAction(StringResources.COPY_ACTION_LABEL, new Runnable() {
-            @Override
-            public void run() {
-                ClipboardHelper.copy(getFinalCode(codeDialogBuilder));
-                codeDialogBuilder.closeDialog();
-            }
-        });
+
         codeDialogBuilder.addAction(StringResources.CREATE_ACTION_LABEL, new Runnable() {
             @Override
             public void run() {
